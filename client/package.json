@@ -1,0 +1,14 @@
+{
+  "name":"lightweight-chat-app",
+  "version":"0.1.0",
+  "private":true,
+  "scripts":{
+    "start":"webpack serve",
+    "build":"webpack"
+  },
+  "dependencies":{
+    "react":"^18.0.0",
+    "react-dom":"^18.0.0",
+    "socket.io-client":"^4.0.0"
+  }
+}
