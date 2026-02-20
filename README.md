@@ -45,7 +45,61 @@ cd ..
 
 ## Usage
 
+### Quick Start (Recommended)
+
+**Option 1: Start both servers with one command (Easiest)**
+
+**Windows:**
+```bash
+start_dev.bat
+```
+
+**Linux/Mac:**
+```bash
+chmod +x start_dev.sh
+./start_dev.sh
+```
+
+This will start both the backend and frontend servers automatically.
+
+**Option 2: Start servers separately**
+
+**Windows:**
+```bash
+# Terminal 1 - Backend
+run_server.bat
+
+# Terminal 2 - Frontend
+run_client.bat
+```
+
+**Linux/Mac:**
+```bash
+# Terminal 1 - Backend
+chmod +x run_server.sh
+./run_server.sh
+
+# Terminal 2 - Frontend
+chmod +x run_client.sh
+./run_client.sh
+```
+
+**Option 3: Manual startup**
+
+```bash
+# Terminal 1 - Backend
+cd server
+python app.py
+
+# Terminal 2 - Frontend
+cd client
+npm start
+```
+
 ### Running the Server (Backend)
+
+The Flask-SocketIO server runs on `http://localhost:5000` by default.
+
 **Windows:**
 ```bash
 run_server.bat
@@ -63,9 +117,17 @@ cd server
 python app.py
 ```
 
-The server will start on `http://localhost:5000`
+**Environment Variables:**
+- `PORT` - Server port (default: 5000)
+- `DEBUG` - Enable debug mode (default: False). When True, allows all CORS origins
+- `CORS_ORIGINS` - Comma-separated list of allowed origins (only used when DEBUG=False)
+- `SECRET_KEY` - Flask secret key
+- `ASYNC_MODE` - Socket.IO async mode (default: 'eventlet')
 
 ### Running the Client (Frontend)
+
+The React dev server runs on `http://localhost:8080` by default (or another port if 8080 is busy).
+
 **Windows:**
 ```bash
 run_client.bat
@@ -83,7 +145,43 @@ cd client
 npm start
 ```
 
-The client will start on `http://localhost:8080` (or another port if 8080 is busy)
+**Available npm scripts:**
+- `npm start` - Start dev server with auto-open browser
+- `npm run dev` - Start dev server without auto-open
+- `npm run build` - Build for production
+- `npm run build:dev` - Build for development
+
+### CORS Configuration
+
+The backend is configured to allow connections from common React dev server ports:
+- `http://localhost:3000` (Create React App default)
+- `http://localhost:8080` (Webpack dev server default)
+- `http://localhost:5173` (Vite default)
+
+When `DEBUG=True`, all origins are allowed for development flexibility.
+
+To customize allowed origins, set the `CORS_ORIGINS` environment variable:
+```bash
+CORS_ORIGINS=http://localhost:3000,http://localhost:8080,https://yourdomain.com
+```
+
+### Concurrent Development
+
+For the best development experience, run both servers in separate terminals:
+
+1. **Terminal 1** - Start the Flask backend:
+   ```bash
+   cd server
+   python app.py
+   ```
+
+2. **Terminal 2** - Start the React frontend:
+   ```bash
+   cd client
+   npm start
+   ```
+
+The React app will automatically connect to the Flask-SocketIO server at `http://localhost:5000`.
 
 ## Socket.IO Events
 

@@ -1,0 +1,16 @@
+@echo off
+echo Starting Lightweight Chat App Development Environment...
+echo.
+echo Starting Flask backend server...
+start "Flask Backend" cmd /k "cd server && python app.py"
+timeout /t 2 /nobreak >nul
+echo.
+echo Starting React frontend...
+start "React Frontend" cmd /k "cd client && npm start"
+echo.
+echo Both servers are starting...
+echo Backend: http://localhost:5000
+echo Frontend: http://localhost:8080
+echo.
+echo Press any key to exit this window (servers will continue running)...
+pause >nul

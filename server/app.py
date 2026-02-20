@@ -24,9 +24,22 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'secret-dev-key-change-in-pro
 async_mode = os.getenv('ASYNC_MODE', 'eventlet')
 logger.info(f'Initializing Socket.IO with async_mode: {async_mode}')
 
+# Configure CORS for React dev server and production
+# Allow common React dev server ports and production origins
+allowed_origins = os.getenv(
+    'CORS_ORIGINS',
+    'http://localhost:3000,http://localhost:8080,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:8080,http://127.0.0.1:5173'
+).split(',')
+
+# In development, allow all origins for flexibility
+# In production, use specific origins from environment variable
+cors_origins = '*' if os.getenv('DEBUG', 'False').lower() == 'true' else allowed_origins
+
+logger.info(f'CORS allowed origins: {cors_origins if cors_origins != "*" else "all (development mode)"}')
+
 socketio = SocketIO(
     app,
-    cors_allowed_origins='*',
+    cors_allowed_origins=cors_origins,
     async_mode=async_mode,
     logger=logger.getEffectiveLevel() <= logging.DEBUG,
     engineio_logger=logger.getEffectiveLevel() <= logging.DEBUG
