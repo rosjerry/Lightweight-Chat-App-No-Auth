@@ -24,7 +24,17 @@ cd Lightweight-Chat-App-No-Auth
 ```bash
 # Install Python dependencies
 pip install -r requirements.txt
+
+# Optional: Configure environment variables
+# Copy .env.example to .env and modify as needed
+cp .env.example .env
 ```
+
+**Environment Variables:**
+- `SECRET_KEY` - Flask secret key (default: 'secret-dev-key-change-in-production')
+- `PORT` - Server port (default: 5000)
+- `DEBUG` - Enable debug mode (default: False)
+- `ASYNC_MODE` - Socket.IO async mode: 'eventlet' or 'gevent' (default: 'eventlet')
 
 ### Frontend Setup
 ```bash
@@ -77,18 +87,47 @@ The client will start on `http://localhost:8080` (or another port if 8080 is bus
 
 ## Socket.IO Events
 
-### Server Events
-- `connect` - Client connects to server
-- `disconnect` - Client disconnects from server
-- `test_message` - Test message handler for debugging
-- `join` - Join a chat room
-- `message` - Send a chat message
+### Server Event Handlers
+All event handlers include comprehensive error handling and logging:
 
-### Client Events
-- `connected` - Server confirms connection
-- `test_response` - Response to test message
-- `joined` - Confirmation of joining a room
-- `message` - Receive a chat message
+- **`connect`** - Handles client connection lifecycle event
+  - Logs connection with client session ID
+  - Emits `connected` event with session details
+  
+- **`disconnect`** - Handles client disconnection lifecycle event
+  - Logs disconnection with client session ID
+  
+- **`test_message`** - Test/debug message handler
+  - Accepts: `{message: string, timestamp?: number}`
+  - Emits: `test_response` with original data and status
+  
+- **`join`** - Join a chat room
+  - Accepts: `{room: string}`
+  - Emits: `joined` event to room members
+  
+- **`leave`** - Leave a chat room
+  - Accepts: `{room: string}`
+  - Emits: `left` event confirmation
+  
+- **`message`** - Send a chat message to room
+  - Accepts: `{room: string, message: string, username?: string, timestamp?: number}`
+  - Broadcasts message to all clients in the room
+
+### Client Events (Emitted by Server)
+- **`connected`** - Connection confirmation with session ID
+- **`test_response`** - Response to test messages
+- **`joined`** - Confirmation of joining a room
+- **`left`** - Confirmation of leaving a room
+- **`message`** - Chat message broadcast
+- **`error`** - Error notifications
+
+## Features
+
+- ✅ Explicit async_mode configuration (eventlet/gevent) for production consistency
+- ✅ Comprehensive logging for all Socket.IO lifecycle events
+- ✅ Error handling with try-catch blocks for all event handlers
+- ✅ Environment variable configuration for security (SECRET_KEY, PORT, DEBUG, ASYNC_MODE)
+- ✅ Verifiable event handler definitions in `server/chat_events.py`
 
 ## Implementation Steps
 1. Initialize Flask app and configure Socket.IO server.
