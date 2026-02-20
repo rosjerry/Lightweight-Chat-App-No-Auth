@@ -3,8 +3,32 @@ import { io } from 'socket.io-client';
 /**
  * Shared Socket.IO client instance
  * Configured to connect to the Flask-SocketIO server
+ * 
+ * API URL priority:
+ * 1. REACT_APP_API_URL environment variable (for production builds)
+ * 2. Window location origin + '/socket.io' (when using webpack proxy)
+ * 3. Default: http://localhost:5000
  */
-const socket = io('http://localhost:5000', {
+const getApiUrl = () => {
+  // Use environment variable if set (for production)
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  
+  // In development with webpack proxy, use relative path
+  // Webpack dev server will proxy /socket.io requests to backend
+  if (process.env.NODE_ENV === 'development' && window.location.port === '8080') {
+    return window.location.origin;
+  }
+  
+  // Fallback to default backend URL
+  return process.env.REACT_APP_API_URL || 'http://localhost:5000';
+};
+
+const apiUrl = getApiUrl();
+console.log('Socket.IO connecting to:', apiUrl);
+
+const socket = io(apiUrl, {
   // Connection options
   transports: ['websocket', 'polling'],
   reconnection: true,
@@ -12,6 +36,8 @@ const socket = io('http://localhost:5000', {
   reconnectionDelayMax: 5000,
   reconnectionAttempts: Infinity,
   timeout: 20000,
+  // Use path if proxying through webpack dev server
+  path: window.location.port === '8080' ? '/socket.io' : undefined,
 });
 
 // Connection status tracking

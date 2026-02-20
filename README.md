@@ -40,8 +40,19 @@ cp .env.example .env
 ```bash
 cd client
 npm install
+
+# Optional: Configure environment variables
+# Copy .env.example to .env and modify as needed
+cp .env.example .env
 cd ..
 ```
+
+**Frontend Environment Variables:**
+- `REACT_APP_API_URL` - Backend API URL (default: `http://localhost:5000`)
+  - Leave empty in development to use webpack proxy
+  - Set to production URL when building for production
+- `PORT` - Webpack dev server port (default: 8080)
+- `OPEN_BROWSER` - Auto-open browser on start (default: true)
 
 ## Usage
 
@@ -146,26 +157,89 @@ npm start
 ```
 
 **Available npm scripts:**
-- `npm start` - Start dev server with auto-open browser
-- `npm run dev` - Start dev server without auto-open
-- `npm run build` - Build for production
+- `npm start` - Start dev server with webpack proxy (recommended)
+- `npm run dev` - Start dev server without auto-open browser
+- `npm run build` - Build for production (uses production env vars)
 - `npm run build:dev` - Build for development
+- `npm run build:prod` - Build for production (explicit)
+
+**Frontend Configuration Files:**
+- `client/webpack.config.js` - Webpack configuration with proxy setup
+- `client/.env.example` - Example environment variables
+- `client/.env.development` - Development environment (used by `npm start`)
+- `client/.env.production` - Production environment (used by `npm run build`)
+- `client/CONFIGURATION.md` - Detailed configuration guide
+
+For detailed frontend configuration options, see [client/CONFIGURATION.md](client/CONFIGURATION.md).
+
+### Frontend-Backend Integration
+
+**Webpack Proxy Configuration:**
+The React dev server is configured with a proxy that forwards Socket.IO requests to the Flask backend. This eliminates CORS issues during development.
+
+- Webpack dev server runs on `http://localhost:8080`
+- Proxy forwards `/socket.io/*` requests to `http://localhost:5000`
+- No CORS configuration needed when using the proxy
+
+**Environment-Based Configuration:**
+The frontend uses environment variables to configure the backend connection:
+
+**Development (with proxy):**
+```bash
+# client/.env.development (or leave REACT_APP_API_URL empty)
+REACT_APP_API_URL=
+PORT=8080
+```
+The webpack proxy will handle routing Socket.IO requests to the backend.
+
+**Development (direct connection):**
+```bash
+# client/.env
+REACT_APP_API_URL=http://localhost:5000
+```
+Socket.IO will connect directly to the backend (requires CORS configuration).
+
+**Production:**
+```bash
+# client/.env.production
+REACT_APP_API_URL=https://your-production-api.com
+```
+Set to your production backend URL when building.
 
 ### CORS Configuration
 
-The backend is configured to allow connections from common React dev server ports:
+**Backend CORS Settings:**
+The Flask backend is configured to allow connections from common React dev server ports:
 - `http://localhost:3000` (Create React App default)
 - `http://localhost:8080` (Webpack dev server default)
 - `http://localhost:5173` (Vite default)
 
+**Development Mode:**
 When `DEBUG=True`, all origins are allowed for development flexibility.
+
+**Production Mode:**
+When `DEBUG=False`, only origins specified in `CORS_ORIGINS` are allowed.
 
 To customize allowed origins, set the `CORS_ORIGINS` environment variable:
 ```bash
 CORS_ORIGINS=http://localhost:3000,http://localhost:8080,https://yourdomain.com
 ```
 
+**Note:** When using the webpack proxy (default in development), CORS is not required as requests are proxied through the same origin.
+
 ### Concurrent Development
+
+**Option 1: Using startup scripts (Recommended)**
+```bash
+# Windows
+start_dev.bat
+
+# Linux/Mac
+chmod +x start_dev.sh
+./start_dev.sh
+```
+
+**Option 2: Manual startup**
 
 For the best development experience, run both servers in separate terminals:
 
@@ -174,14 +248,26 @@ For the best development experience, run both servers in separate terminals:
    cd server
    python app.py
    ```
+   Backend will start on `http://localhost:5000`
 
 2. **Terminal 2** - Start the React frontend:
    ```bash
    cd client
    npm start
    ```
+   Frontend will start on `http://localhost:8080`
 
-The React app will automatically connect to the Flask-SocketIO server at `http://localhost:5000`.
+**How it works:**
+- The React app connects to the Flask-SocketIO server
+- In development, webpack proxy forwards Socket.IO requests from `http://localhost:8080` to `http://localhost:5000`
+- No CORS issues because requests are proxied through the same origin
+- Socket.IO WebSocket connections are properly proxied
+
+**Configuration Files:**
+- `client/webpack.config.js` - Webpack proxy configuration
+- `client/.env.development` - Development environment variables
+- `client/.env.production` - Production environment variables
+- `server/app.py` - Flask CORS and Socket.IO configuration
 
 ## Socket.IO Events
 
