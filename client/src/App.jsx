@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import socket, { getConnectionStatus } from './socket';
+import ChatRoom from './components/ChatRoom';
 
 /**
  * Root App component with connection status UI
@@ -94,19 +95,23 @@ function App() {
       </header>
 
       <main style={styles.main}>
-        <div style={styles.placeholder}>
-          <h2 style={styles.placeholderTitle}>Welcome to Lightweight Chat</h2>
-          <p style={styles.placeholderText}>
-            {connectionStatus.connected
-              ? 'Connected to server. Chat functionality will be available here.'
-              : 'Connecting to server...'}
-          </p>
-          {!connectionStatus.connected && (
-            <p style={styles.helpText}>
-              Make sure the Flask server is running on port 5000
+        {connectionStatus.connected ? (
+          <ChatRoom />
+        ) : (
+          <div style={styles.placeholder}>
+            <h2 style={styles.placeholderTitle}>Welcome to Lightweight Chat</h2>
+            <p style={styles.placeholderText}>
+              {connectionStatus.connecting
+                ? 'Connecting to server...'
+                : 'Disconnected from server'}
             </p>
-          )}
-        </div>
+            {!connectionStatus.connected && (
+              <p style={styles.helpText}>
+                Make sure the Flask server is running on port 5000
+              </p>
+            )}
+          </div>
+        )}
       </main>
     </div>
   );
@@ -170,9 +175,7 @@ const styles = {
   main: {
     flex: 1,
     display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '2rem',
+    overflow: 'hidden',
   },
   placeholder: {
     textAlign: 'center',
